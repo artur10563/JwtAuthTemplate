@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\JwtAuthTemplate.Domain\JwtAuthTemplate.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

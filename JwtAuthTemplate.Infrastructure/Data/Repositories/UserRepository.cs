@@ -1,15 +1,20 @@
-﻿using BCrypt.Net;
-using JwtAuthTemplate.Application.DTOs.Auth;
+﻿using JwtAuthTemplate.Application.DTOs.Auth;
 using JwtAuthTemplate.Application.Repositories;
 using JwtAuthTemplate.Domain.Entities;
 using JwtAuthTemplate.Infrastructure.Data.Repositories.Shared;
+using JwtAuthTemplate.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace JwtAuthTemplate.Infrastructure.Data.Repositories
 {
 	public class UserRepository : BaseRepository<User>, IUserRepository
 	{
-		public UserRepository(AppDbContext context) : base(context) { }
+		private readonly JwtTokenProvider _jwtTokenProvider;
+
+		public UserRepository(AppDbContext context, JwtTokenProvider jwtTokenProvider) : base(context)
+		{
+			_jwtTokenProvider = jwtTokenProvider;
+		}
 
 		public async Task<LoginResponse> LoginAsync(UserLoginDTO userLoginDTO)
 		{
@@ -23,8 +28,8 @@ namespace JwtAuthTemplate.Infrastructure.Data.Repositories
 			var checkPassword = BCrypt.Net.BCrypt.Verify(userLoginDTO.Password, user.PasswordHash);
 			if (checkPassword)
 			{
-				//var token = GenerateJWTToken(); //TODO: add token generation
-				return new LoginResponse(true, "Successfully logged in", "token");
+				var token = _jwtTokenProvider.Generate(user);
+				return new LoginResponse(true, "Successfully logged in", token);
 			}
 			else
 				return new LoginResponse(false, "Invalid credentials");
@@ -40,7 +45,7 @@ namespace JwtAuthTemplate.Infrastructure.Data.Repositories
 
 			Add(new User()
 			{
-				Email = userRegisterDTO.Email,
+				Email = userRegisterDTO.Email.ToLower(),
 				Name = userRegisterDTO.Nickname,
 				PasswordHash = BCrypt.Net.BCrypt.HashPassword(userRegisterDTO.Password)
 			});
@@ -54,7 +59,7 @@ namespace JwtAuthTemplate.Infrastructure.Data.Repositories
 		{
 			return await _context.Users
 				.FirstOrDefaultAsync(u =>
-				u.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
+				u.Email.Equals(email.ToLower()));
 		}
 	}
 }

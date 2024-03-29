@@ -1,4 +1,7 @@
-﻿using JwtAuthTemplate.Infrastructure.Data;
+﻿using JwtAuthTemplate.Application.Repositories;
+using JwtAuthTemplate.Infrastructure.Data;
+using JwtAuthTemplate.Infrastructure.Data.Repositories;
+using JwtAuthTemplate.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +18,8 @@ namespace JwtAuthTemplate.Infrastructure.DependencyInjection
 			serviceCollection.AddDbContext<AppDbContext>(options =>
 				options.UseSqlServer(connectionString));
 
-			//serviceCollection.AddScoped<Interface, Class>();
+			serviceCollection.AddScoped<IUserRepository, UserRepository>();
+			serviceCollection.AddSingleton<JwtTokenProvider>();
 
 			return serviceCollection;
 		}

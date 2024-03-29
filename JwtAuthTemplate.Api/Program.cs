@@ -1,4 +1,7 @@
+using JwtAuthTemplate.Api.Endpoints;
+using JwtAuthTemplate.Api.Extensions;
 using JwtAuthTemplate.Infrastructure.DependencyInjection;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,8 +10,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerWithJwtAuth();
 builder.Services.AddStorage(builder.Configuration);
+builder.Services.AddJwtAuth(builder.Configuration);
 
 
 var app = builder.Build();
@@ -22,8 +27,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.RegisterAuthEndpoints();
+app.RegisterUserEndpoints();
 
 app.Run();
